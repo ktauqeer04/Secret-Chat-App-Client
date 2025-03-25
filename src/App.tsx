@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
 
 
@@ -6,6 +6,7 @@ const App = () => {
 
 
   const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState<string []>([]);
   const socket = useMemo(() => io("http://localhost:5001"), []);
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -13,7 +14,20 @@ const App = () => {
     socket.emit("temp", message)
   }
 
+  const onMessageReceived = useCallback((msg: string) => {
+    console.log("from server", msg);
+
+    try {
+      // const { thisMessage } = JSON.parse(msg);
+      setMessages((prev) => [...prev, msg]);
+    } catch (error) {
+      console.error("Error parsing message:", error);
+    }
+  
+  }, [])
+
   useEffect(() => {
+
     socket.on("connect", () => {
       console.log('connected successfully');
     })
@@ -26,10 +40,17 @@ const App = () => {
       console.log(s);
     })
 
+    socket.on("message", onMessageReceived)
+
     return () => {
-      socket.disconnect()
+      socket.disconnect();
+      socket.off("message", onMessageReceived);
     }
   }, []);
+
+  useEffect(() => {
+    console.log(messages)
+  }, [messages])
 
   // useEffect(() => {
   //   console.log(message);
@@ -39,6 +60,11 @@ const App = () => {
   return <div>
     <input type="text" value={message} onChange={e => setMessage(e.target.value)}/>
     <button onClick={handleSubmit}></button>
+    <div>
+      {messages.map((e, index) => (
+        <li key={index}>{JSON.parse(e)}</li>  // Added `key` prop
+      ))}
+    </div>
   </div>
 }
 

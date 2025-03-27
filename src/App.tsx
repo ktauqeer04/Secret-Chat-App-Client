@@ -18,8 +18,9 @@ const App = () => {
     console.log("from server", msg);
 
     try {
-      // const { thisMessage } = JSON.parse(msg);
+
       setMessages((prev) => [...prev, msg]);
+      
     } catch (error) {
       console.error("Error parsing message:", error);
     }
@@ -48,21 +49,13 @@ const App = () => {
     }
   }, []);
 
-  useEffect(() => {
-    console.log(messages)
-  }, [messages])
-
-  // useEffect(() => {
-  //   console.log(message);
-  // }, [message])
-
 
   return <div>
     <input type="text" value={message} onChange={e => setMessage(e.target.value)}/>
     <button onClick={handleSubmit}></button>
     <div>
       {messages.map((e, index) => (
-        <li key={index}>{JSON.parse(e)}</li>  // Added `key` prop
+        <li key={index}>{JSON.parse(e)}</li> 
       ))}
     </div>
   </div>
